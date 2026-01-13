@@ -1,1 +1,0 @@
-/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/sat_solver.dir/sat_solver.cpp.o -o sat_solver  ../../libsemcal.a 

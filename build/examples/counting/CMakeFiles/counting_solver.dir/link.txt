@@ -1,1 +1,0 @@
-/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/counting_solver.dir/counting_solver.cpp.o -o counting_solver  ../../libsemcal.a 
