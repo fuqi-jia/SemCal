@@ -296,6 +296,7 @@ SemCal/
 ├── AXIOMS.md
 ├── COVERAGE.md
 ├── build.sh                 # Build script
+├── commit.sh                # Auto commit script
 │
 ├── include/                 # Public C++ interfaces (semantic contracts)
 │   ├── semcal.h             # ⭐ Umbrella header (one-line include)
@@ -381,6 +382,23 @@ To build the project:
 ```bash
 ./build.sh
 ```
+
+This will automatically download SMTParser to `external/SMTParser/` if it doesn't exist.
+
+### Committing Changes
+
+To quickly commit changes with a predefined message:
+
+```bash
+./commit.sh
+```
+
+Edit `COMMIT_MESSAGE` in `commit.sh` to change the default commit message.
+
+Options:
+- `-m, --message MSG`: Override commit message
+- `-p, --push`: Automatically push after commit
+- `--no-push`: Don't push (default)
 
 This will create:
 - Library: `build/libsemcal.a`
