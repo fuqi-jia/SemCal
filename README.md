@@ -1,13 +1,17 @@
 # SemCal
 ## A Semantic Calculus for Constraint Reasoning
 
-**SemCal** is a solver-agnostic semantic calculus for logical constraint reasoning.
-It provides a **minimal axiomatization of semantic operators** over model sets,
-which underlie SMT-style satisfiability, optimization, counting, and sampling.
+**SemCal** is a solver-agnostic *semantic calculus* for logical constraint reasoning.
+It provides a **minimal axiomatization of semantic operators over model sets**
+that underlie SMT-style satisfiability, optimization, counting, and sampling.
 
 SemCal is **not a solver** and **does not prescribe algorithms**.
-Instead, it formalizes *what it means* for reasoning components to be sound,
+Instead, it formalizes *what it means* for reasoning components to be **sound at the semantic level**,
 independently of how they are implemented (e.g., CAD, ICP, SAT, bit-blasting).
+
+Crucially, **SemCal is designed to make it easy to construct new solvers**:
+any reasoning system built by orchestrating SemCal operators
+inherits semantic soundness by construction.
 
 ---
 
@@ -15,17 +19,20 @@ independently of how they are implemented (e.g., CAD, ICP, SAT, bit-blasting).
 
 SemCal is built on the following principles:
 
-- **Semantics-first**: reasoning is defined over model sets, not syntax.
+- **Semantics-first**: reasoning is defined over *model sets*, not syntax.
 - **Operator-based**: algorithms are instances of semantic operators.
 - **Solver-agnostic**: no commitment to DPLL(T), CDCL, CAD, or any backend.
 - **Minimal axioms**: only soundness requirements are specified.
 - **Composable**: operators can be orchestrated to realize different tasks.
+- **Solver-construction oriented**: new solvers are assembled from certified components.
 
 The goal of SemCal is to serve as a **semantic foundation** for:
+
 - SMT solving
 - Optimization Modulo Theories (OMT)
 - Model counting and volume computation
 - Symbolic sampling and refutation
+- Experimental and domain-specific solver design
 
 ---
 
@@ -34,21 +41,24 @@ The goal of SemCal is to serve as a **semantic foundation** for:
 ### 2.1 Models and Satisfaction
 
 Fix a background theory (or a combination of theories) with a set of models:
-\[
-\mathcal{M}.
-\]
 
-For a constraint (formula) \(F\), its **model set** is defined as:
-\[
+$$
+\mathcal{M}.
+$$
+
+For a constraint (formula) $F$, its **model set** is defined as:
+
+$$
 \llbracket F \rrbracket \;=\; \{\, M \in \mathcal{M} \mid M \models F \,\}.
-\]
+$$
 
 ### 2.2 Logical Equivalence
 
-Two constraints \(F\) and \(G\) are **logically equivalent** iff:
-\[
+Two constraints $F$ and $G$ are **logically equivalent** iff:
+
+$$
 F \equiv G \quad\Longleftrightarrow\quad \llbracket F \rrbracket = \llbracket G \rrbracket.
-\]
+$$
 
 The semantic core defines *meaning only*.
 No reasoning, search, or approximation is performed at this level.
@@ -63,15 +73,19 @@ preserve (or explicitly relate) semantic meaning.
 ### 3.1 Constraint-Preserving Transformations
 
 A transformation
-\[
+
+$$
 T : F \mapsto F'
-\]
+$$
+
 is **semantics-preserving** if:
-\[
+
+$$
 \llbracket F \rrbracket = \llbracket F' \rrbracket.
-\]
+$$
 
 Typical instances include:
+
 - normalization
 - purification (theory separation)
 - introduction of auxiliary variables
@@ -80,9 +94,11 @@ Typical instances include:
 ### 3.2 Semantic Encoding
 
 An encoding
-\[
+
+$$
 \mathsf{Enc} : F \mapsto F'
-\]
+$$
+
 must explicitly specify its semantic contract, e.g.:
 
 - equisatisfiability, or
@@ -97,11 +113,13 @@ Encodings are **representation-level operators**, not reasoning operators.
 ### 4.1 Abstract Domain
 
 SemCal reasons about approximations of model sets via an abstract domain:
-\[
+
+$$
 (\mathcal{A}, \sqsubseteq).
-\]
+$$
 
 Examples include:
+
 - boxes or regions
 - symbolic cells or covers
 - partial assignments
@@ -110,41 +128,47 @@ Examples include:
 ### 4.2 Concretization
 
 A **concretization function** maps abstract elements to model sets:
-\[
+
+$$
 \gamma : \mathcal{A} \to \wp(\mathcal{M}).
-\]
+$$
 
 ### 4.3 Galois Connection (Optional)
 
 When available, an abstraction function
-\[
+
+$$
 \alpha : \wp(\mathcal{M}) \to \mathcal{A}
-\]
-forms a Galois connection with \(\gamma\) if:
-\[
+$$
+
+forms a Galois connection with $\gamma$ if:
+
+$$
 \alpha(S) \sqsubseteq a
 \;\Longleftrightarrow\;
 S \subseteq \gamma(a).
-\]
+$$
 
-A Galois connection is **not required** for soundness, but enables optimal
-abstraction and refinement.
+A Galois connection is **not required** for soundness,
+but enables optimal abstraction and refinement.
 
 ---
 
 ## 5. Semantic States
 
 A **semantic state** is a pair:
-\[
+
+$$
 \sigma = (F, a), \quad a \in \mathcal{A}.
-\]
+$$
 
 Its concrete meaning is:
-\[
+
+$$
 \mathsf{Conc}(\sigma)
 \;=\;
 \llbracket F \rrbracket \cap \gamma(a).
-\]
+$$
 
 All semantic operators are required to be sound with respect to this meaning.
 
@@ -155,160 +179,167 @@ All semantic operators are required to be sound with respect to this meaning.
 Semantic operators transform semantic states or their components.
 They are defined solely by **soundness axioms**.
 
----
-
-### 6.1 Restriction (Narrowing / Propagation)
-
-A restriction operator:
-\[
-\mathsf{Restrict}_F : \mathcal{A} \to \mathcal{A}.
-\]
-
-**Soundness (R):**
-\[
-\gamma(\mathsf{Restrict}_F(a))
-\;\supseteq\;
-\gamma(a) \cap \llbracket F \rrbracket.
-\]
-
-Restriction may optionally satisfy progress:
-\[
-\mathsf{Restrict}_F(a) \sqsubseteq a.
-\]
+(Restriction, Decomposition, Infeasibility, Relaxation, Restoration,
+Projection, and Lifting — see `AXIOMS.md` for the formal axioms.)
 
 ---
 
-### 6.2 Decomposition (Splitting / Partition)
+## 7. Formal Scope and Coverage
 
-A decomposition operator:
-\[
-\mathsf{Decomp} : \mathcal{A} \to \mathcal{P}_{\mathrm{fin}}(\mathcal{A}).
-\]
+SemCal provides **semantic coverage** for all *formalizable* reasoning tasks
+in the SMT reasoning taxonomy, including:
 
-**Covering (D):**
-\[
-\gamma(a)
-\;\subseteq\;
-\bigcup_{a_i \in \mathsf{Decomp}(a)} \gamma(a_i).
-\]
+- satisfiability and refutation
+- abstraction and refinement
+- optimization and relaxed feasibility
+- model enumeration, counting, and integration
+- symbolic sampling
+- quantifier elimination and projection
+- invariant and lemma synthesis
 
----
+Tasks that depend on **search heuristics, optimization strategies,
+or termination guarantees** are intentionally treated as
+*applications outside the calculus*.
 
-### 6.3 Local Infeasibility
-
-A predicate:
-\[
-\mathsf{Infeasible}(F,a) \in \{\textsf{true},\textsf{false},\textsf{unknown}\}.
-\]
-
-**Soundness (I):**
-\[
-\mathsf{Infeasible}(F,a)=\textsf{true}
-\;\Rightarrow\;
-\llbracket F \rrbracket \cap \gamma(a) = \emptyset.
-\]
+SemCal separates **semantic soundness** from **algorithmic strategy**.
 
 ---
 
-### 6.4 Relaxation (Semantic Over-Approximation)
+## 8. Solver Construction via SemCal
 
-A relaxation operator:
-\[
-\mathsf{Relax} : F \mapsto F^\alpha.
-\]
+A central goal of SemCal is to **enable the construction of new solvers**
+by assembling semantic operators.
 
-**Over-Approximation (A):**
-\[
-\llbracket F \rrbracket \subseteq \llbracket F^\alpha \rrbracket.
-\]
+A solver in the SemCal sense is:
 
----
+> an orchestration of semantic operators
+> over semantic states $(F, a)$.
 
-### 6.5 Restoration (Refinement)
+SemCal deliberately exposes **operator-level interfaces** rather than
+monolithic solver APIs. This allows researchers to:
 
-Given a spurious model \(M \models F^\alpha\) with \(M \not\models F\),
-a restoration operator produces a constraint \(R\).
+- prototype new solver architectures
+- mix symbolic, numeric, and bit-level reasoning
+- experiment with non-standard search or decomposition strategies
+- build theory-specific or domain-specific solvers
 
-**Refinement (C):**
-\[
-\llbracket F \rrbracket
-\subseteq
-\llbracket F^\alpha \land R \rrbracket
-\quad\text{and}\quad
-M \not\models R.
-\]
+### Soundness by Construction
 
----
+Any solver pipeline that uses only operators satisfying
+the SemCal axioms (R, D, I, A, C, P, L)
+is **semantically sound by construction**.
 
-### 6.6 Projection and Lifting
-
-Let \(\pi : \mathcal{M} \to \mathcal{M}_k\) be a forgetful mapping.
-
-**Projection (P):**
-\[
-\exists_\pi(\gamma(a))
-\subseteq
-\gamma_k(\mathsf{Proj}_\pi(a)).
-\]
-
-**Lifting (L):**
-\[
-\gamma(\mathsf{Lift}_\pi(b))
-\subseteq
-\pi^{-1}(\gamma_k(b)).
-\]
+SemCal therefore provides a **certified substrate**
+for future SMT solver research.
 
 ---
 
-## 7. Applications (Outside SemCal)
+## 9. Applications (Outside SemCal)
 
 SemCal does not define applications, but supports them via orchestration:
 
-- **SAT**: is \(\llbracket F \rrbracket \neq \emptyset\)?
-- **OPT**: extremal values over \(\llbracket F \rrbracket\)
-- **COUNT / VOLUME**: measure of \(\llbracket F \rrbracket\)
-- **SAMPLE**: draw elements from \(\llbracket F \rrbracket\)
+- **SAT**: is $\llbracket F \rrbracket \neq \emptyset$?
+- **OPT**: extremal values over $\llbracket F \rrbracket$
+- **COUNT / VOLUME**: measure of $\llbracket F \rrbracket$
+- **SAMPLE**: draw elements from $\llbracket F \rrbracket$
 
 ---
 
-## 8. Soundness Guarantee
+## 10. Soundness Guarantee
 
 Any reasoning pipeline that uses only operators satisfying the SemCal axioms
 (R, D, I, A, C, P, L) is **semantically sound** with respect to the original
-constraint \(F\).
+constraint $F$.
 
 Completeness and termination are deliberately left unspecified.
 
 ---
 
-## 9. Instantiation Policy
+## 11. Instantiation Policy
 
 Concrete algorithms (e.g., CAD, ICP, bit-level reasoning) may be integrated
 *only by demonstrating* that they satisfy the corresponding semantic axioms.
 
-SemCal privileges **no algorithm**.
+SemCal privileges **no algorithm** and **no solver architecture**.
 
 ---
 
-## 10. Scope and Non-Goals
+## 12. Repository Structure
+
+The SemCal repository is organized as follows:
+
+```text
+SemCal/
+├── README.md
+├── AXIOMS.md
+├── COVERAGE.md
+│
+├── include/                 # Public C++ interfaces (semantic contracts)
+│   ├── semcal.h             # ⭐ Umbrella header (one-line include)
+│   │
+│   ├── core/
+│   │   ├── model.h
+│   │   ├── formula.h
+│   │   └── semantics.h
+│   │
+│   ├── domain/
+│   │   ├── abstract_domain.h
+│   │   ├── concretization.h
+│   │   └── galois.h
+│   │
+│   ├── state/
+│   │   └── semantic_state.h
+│   │
+│   ├── operators/
+│   │   ├── restrict.h
+│   │   ├── decompose.h
+│   │   ├── infeasible.h
+│   │   ├── relax.h
+│   │   ├── refine.h
+│   │   ├── project.h
+│   │   └── lift.h
+│   │
+│   ├── orchestration/
+│   │   ├── pipeline.h
+│   │   └── strategy.h
+│   │
+│   └── util/
+│       └── result.h
+│
+├── src/                     # Reference / default implementations
+│   ├── core/
+│   ├── domain/
+│   ├── operators/
+│   └── orchestration/
+│
+├── examples/                # Example solvers built from SemCal
+│   ├── sat/
+│   ├── omt/
+│   └── counting/
+│
+├── external/                # Third-party libraries (submodules or vendored)
+│   ├── SMTParser/
+│   ├── libpoly/
+│   ├── cadical/
+│   └── README.md            # Dependency policy & versions
+│
+├── docs/
+│   ├── design.md
+│   └── solver_patterns.md
+│
+├── CMakeLists.txt
+└── LICENSE
+```
+---
+
+## 13. Scope and Non-Goals
 
 SemCal intentionally does **not** provide:
 
 - a solver
-- a search strategy
+- a fixed search strategy
 - a termination guarantee
 - a preferred theory
 
-Its role is to define the **semantic contract** that all such systems rely on.
-
----
-
-## 11. Citation
-
-If you use SemCal in academic work, please cite it as:
-
-> *SemCal: A Semantic Calculus for Constraint Reasoning.*
-
-(Full citation to appear.)
-
----
+Its role is to define the **semantic contract**
+that enables *any* such system to be built correctly.
