@@ -1,0 +1,1 @@
+/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/smt_solver.dir/smt_solver.cpp.o -o smt_solver  ../../libsemcal.a 

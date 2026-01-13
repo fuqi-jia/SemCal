@@ -1,0 +1,1 @@
+/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/omt_solver.dir/omt_solver.cpp.o -o omt_solver  ../../libsemcal.a 
