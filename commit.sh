@@ -16,8 +16,8 @@ NC='\033[0m' # No Color
 # ============================================
 COMMIT_MESSAGE="Update SemCal: fix GitHub markdown compatibility and add SMTParser auto-download"
 
-# Optional: Set to true to automatically push after commit
-AUTO_PUSH=false
+# Optional: Set to false to disable automatic push after commit
+AUTO_PUSH=true
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -34,12 +34,16 @@ while [[ $# -gt 0 ]]; do
             AUTO_PUSH=false
             shift
             ;;
+        -n|--no-push)
+            AUTO_PUSH=false
+            shift
+            ;;
         -h|--help)
             echo "Usage: $0 [OPTIONS]"
             echo "Options:"
             echo "  -m, --message MSG  Override commit message"
-            echo "  -p, --push         Automatically push after commit"
-            echo "  --no-push          Don't push (default)"
+            echo "  -p, --push         Automatically push after commit (default)"
+            echo "  -n, --no-push      Don't push"
             echo "  -h, --help         Show this help message"
             echo ""
             echo "To change the default commit message, edit COMMIT_MESSAGE in this script."
@@ -96,7 +100,7 @@ if [ "$AUTO_PUSH" = true ]; then
 else
     echo ""
     echo -e "${YELLOW}Commit completed. Use 'git push' to push to remote.${NC}"
-    echo "Or run with -p/--push flag to auto-push: $0 -p"
+    echo "Or run with -n/--no-push flag to skip push: $0 -n"
 fi
 
 echo ""

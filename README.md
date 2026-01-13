@@ -49,7 +49,7 @@ $$
 For a constraint (formula) $F$, its **model set** is defined as:
 
 $$
-[\![F]\!] = \{ M \in \mathcal{M} \mid M \models F \}.
+[[F]] = \{ M \in \mathcal{M} \mid M \models F \}.
 $$
 
 ### 2.2 Logical Equivalence
@@ -57,7 +57,7 @@ $$
 Two constraints $F$ and $G$ are **logically equivalent** iff:
 
 $$
-F \equiv G \quad\Longleftrightarrow\quad [\![F]\!] = [\![G]\!].
+F \equiv G \quad\Longleftrightarrow\quad [[F]] = [[G]].
 $$
 
 The semantic core defines *meaning only*.
@@ -81,7 +81,7 @@ $$
 is **semantics-preserving** if:
 
 $$
-[\![F]\!] = [\![F']\!].
+[[F]] = [[F']].
 $$
 
 Typical instances include:
@@ -165,7 +165,7 @@ $$
 Its concrete meaning is:
 
 $$
-\mathsf{Conc}(\sigma) = [\![F]\!] \cap \gamma(a).
+\mathsf{Conc}(\sigma) = [[F]] \cap \gamma(a).
 $$
 
 All semantic operators are required to be sound with respect to this meaning.
@@ -236,11 +236,11 @@ for future SMT solver research.
 
 SemCal does not define applications, but supports them via orchestration:
 
-- **SAT**: is $[\![F]\!] \neq \emptyset$? (pure Boolean satisfiability)
+- **SAT**: is $[[F]] \neq \emptyset$? (pure Boolean satisfiability)
 - **SMT**: satisfiability modulo theories (with theory constraints)
-- **OPT**: extremal values over $[\![F]\!]$
-- **COUNT / VOLUME**: measure of $[\![F]\!]$
-- **SAMPLE**: draw elements from $[\![F]\!]$
+- **OPT**: extremal values over $[[F]]$
+- **COUNT / VOLUME**: measure of $[[F]]$
+- **SAMPLE**: draw elements from $[[F]]$
 
 ---
 
