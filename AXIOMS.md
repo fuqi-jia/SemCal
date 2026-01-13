@@ -15,13 +15,13 @@ Let:
 
 - $\mathcal{M}$ be the set of all models of a background theory.
 - $F$ be a constraint (formula).
-- $\llbracket F \rrbracket \subseteq \mathcal{M}$ denote its model set.
+- $[\![F]\!] \subseteq \mathcal{M}$ denote its model set.
 - $(\mathcal{A}, \sqsubseteq)$ be an abstract domain.
-- $\gamma : \mathcal{A} \to \wp(\mathcal{M})$ be a concretization function.
+- $\gamma : \mathcal{A} \to \mathcal{P}(\mathcal{M})$ be a concretization function.
 
 A semantic state is a pair $(F, a)$ with concrete meaning:
 \[
-\mathsf{Conc}(F,a) = \llbracket F \rrbracket \cap \gamma(a).
+\mathsf{Conc}(F,a) = [\![F]\!] \cap \gamma(a).
 \]
 
 All axioms below are stated with respect to $\mathsf{Conc}$.
@@ -38,16 +38,14 @@ A restriction operator
 \]
 is **sound** if:
 \[
-\llbracket F \rrbracket \cap \gamma(a)
-\;=\;
-\llbracket F \rrbracket \cap \gamma(a').
+[\![F]\!] \cap \gamma(a) = [\![F]\!] \cap \gamma(a').
 \]
 
 Equivalently:
 \[
 \gamma(a') \subseteq \gamma(a)
 \quad\text{and}\quad
-\gamma(a) \cap \llbracket F \rrbracket \subseteq \gamma(a').
+\gamma(a) \cap [\![F]\!] \subseteq \gamma(a').
 \]
 
 ### Intuition
@@ -102,7 +100,7 @@ If
 \]
 then:
 \[
-\llbracket F \rrbracket \cap \gamma(a) = \emptyset.
+[\![F]\!] \cap \gamma(a) = \emptyset.
 \]
 
 ### Intuition
@@ -128,7 +126,7 @@ For a relaxation operator
 \]
 the following must hold:
 \[
-\llbracket F \rrbracket \subseteq \llbracket F^\alpha \rrbracket.
+[\![F]\!] \subseteq [\![F^\alpha]\!].
 \]
 
 ### Intuition
@@ -155,9 +153,7 @@ Given:
 
 a refinement constraint $R$ is **sound** if:
 \[
-\llbracket F \rrbracket
-\subseteq
-\llbracket F^\alpha \land R \rrbracket
+[\![F]\!] \subseteq [\![F^\alpha \land R]\!]
 \quad\text{and}\quad
 M \not\models R.
 \]

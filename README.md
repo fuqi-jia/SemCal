@@ -49,7 +49,7 @@ $$
 For a constraint (formula) $F$, its **model set** is defined as:
 
 $$
-\llbracket F \rrbracket \;=\; \{\, M \in \mathcal{M} \mid M \models F \,\}.
+[\![F]\!] = \{ M \in \mathcal{M} \mid M \models F \}.
 $$
 
 ### 2.2 Logical Equivalence
@@ -57,7 +57,7 @@ $$
 Two constraints $F$ and $G$ are **logically equivalent** iff:
 
 $$
-F \equiv G \quad\Longleftrightarrow\quad \llbracket F \rrbracket = \llbracket G \rrbracket.
+F \equiv G \quad\Longleftrightarrow\quad [\![F]\!] = [\![G]\!].
 $$
 
 The semantic core defines *meaning only*.
@@ -81,7 +81,7 @@ $$
 is **semantics-preserving** if:
 
 $$
-\llbracket F \rrbracket = \llbracket F' \rrbracket.
+[\![F]\!] = [\![F']\!].
 $$
 
 Typical instances include:
@@ -130,7 +130,7 @@ Examples include:
 A **concretization function** maps abstract elements to model sets:
 
 $$
-\gamma : \mathcal{A} \to \wp(\mathcal{M}).
+\gamma : \mathcal{A} \to \mathcal{P}(\mathcal{M}).
 $$
 
 ### 4.3 Galois Connection (Optional)
@@ -138,7 +138,7 @@ $$
 When available, an abstraction function
 
 $$
-\alpha : \wp(\mathcal{M}) \to \mathcal{A}
+\alpha : \mathcal{P}(\mathcal{M}) \to \mathcal{A}
 $$
 
 forms a Galois connection with $\gamma$ if:
@@ -165,9 +165,7 @@ $$
 Its concrete meaning is:
 
 $$
-\mathsf{Conc}(\sigma)
-\;=\;
-\llbracket F \rrbracket \cap \gamma(a).
+\mathsf{Conc}(\sigma) = [\![F]\!] \cap \gamma(a).
 $$
 
 All semantic operators are required to be sound with respect to this meaning.
@@ -238,11 +236,11 @@ for future SMT solver research.
 
 SemCal does not define applications, but supports them via orchestration:
 
-- **SAT**: is $\llbracket F \rrbracket \neq \emptyset$? (pure Boolean satisfiability)
+- **SAT**: is $[\![F]\!] \neq \emptyset$? (pure Boolean satisfiability)
 - **SMT**: satisfiability modulo theories (with theory constraints)
-- **OPT**: extremal values over $\llbracket F \rrbracket$
-- **COUNT / VOLUME**: measure of $\llbracket F \rrbracket$
-- **SAMPLE**: draw elements from $\llbracket F \rrbracket$
+- **OPT**: extremal values over $[\![F]\!]$
+- **COUNT / VOLUME**: measure of $[\![F]\!]$
+- **SAMPLE**: draw elements from $[\![F]\!]$
 
 ---
 
