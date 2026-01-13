@@ -42,3 +42,6 @@
 
 # external libraries
 external/
+
+# build directory
+build/

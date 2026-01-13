@@ -37,12 +37,12 @@ enum class PipelineResult {
 class Pipeline {
 private:
     std::unique_ptr<operators::Restrict> restrict_;
-    std::unique_ptr<operators::Decompose> decompose_;
-    std::unique_ptr<operators::Infeasible> infeasible_;
+    std::unique_ptr<operators::DecomposeOp> decompose_;
+    std::unique_ptr<operators::InfeasibleOp> infeasible_;
     std::unique_ptr<operators::Relax> relax_;
     std::unique_ptr<operators::Refine> refine_;
-    std::unique_ptr<operators::Project> project_;
-    std::unique_ptr<operators::Lift> lift_;
+    std::unique_ptr<operators::ProjectOp> project_;
+    std::unique_ptr<operators::LiftOp> lift_;
 
     std::shared_ptr<core::Semantics> semantics_;
     std::shared_ptr<domain::Concretization> concretization_;
@@ -53,12 +53,12 @@ public:
      */
     Pipeline(
         std::unique_ptr<operators::Restrict> restrict,
-        std::unique_ptr<operators::Decompose> decompose,
-        std::unique_ptr<operators::Infeasible> infeasible,
+        std::unique_ptr<operators::DecomposeOp> decompose,
+        std::unique_ptr<operators::InfeasibleOp> infeasible,
         std::unique_ptr<operators::Relax> relax,
         std::unique_ptr<operators::Refine> refine,
-        std::unique_ptr<operators::Project> project,
-        std::unique_ptr<operators::Lift> lift,
+        std::unique_ptr<operators::ProjectOp> project,
+        std::unique_ptr<operators::LiftOp> lift,
         std::shared_ptr<core::Semantics> semantics,
         std::shared_ptr<domain::Concretization> concretization);
 
@@ -81,12 +81,12 @@ public:
     /**
      * @brief Get the decompose operator.
      */
-    operators::Decompose& getDecompose() const { return *decompose_; }
+    operators::DecomposeOp& getDecompose() const { return *decompose_; }
 
     /**
      * @brief Get the infeasible operator.
      */
-    operators::Infeasible& getInfeasible() const { return *infeasible_; }
+    operators::InfeasibleOp& getInfeasible() const { return *infeasible_; }
 
     /**
      * @brief Get the relax operator.
@@ -101,12 +101,12 @@ public:
     /**
      * @brief Get the project operator.
      */
-    operators::Project& getProject() const { return *project_; }
+    operators::ProjectOp& getProject() const { return *project_; }
 
     /**
      * @brief Get the lift operator.
      */
-    operators::Lift& getLift() const { return *lift_; }
+    operators::LiftOp& getLift() const { return *lift_; }
 
     /**
      * @brief Get the semantics.

@@ -1,6 +1,7 @@
 #ifndef SEMCAL_UTIL_RESULT_H
 #define SEMCAL_UTIL_RESULT_H
 
+#include "op_result.h"
 #include <variant>
 #include <string>
 #include <memory>
@@ -107,6 +108,9 @@ public:
         return defaultValue;
     }
 };
+
+// OpStatus and OpResult are now defined in op_result.h
+// This file only contains the legacy Result<T, E> type for backward compatibility
 
 } // namespace util
 } // namespace semcal

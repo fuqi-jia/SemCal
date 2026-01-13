@@ -1,10 +1,8 @@
-#ifndef SEMCAL_OPERATORS_DECOMPOSE_H
-#define SEMCAL_OPERATORS_DECOMPOSE_H
-
-#include "../domain/abstract_domain.h"
+#pragma once
+#include "operator.h"
+#include "../util/op_result.h"
 #include "../state/semantic_state.h"
 #include <vector>
-#include <memory>
 
 namespace semcal {
 namespace operators {
@@ -12,50 +10,40 @@ namespace operators {
 /**
  * @brief Decomposition operator (Axiom D).
  * 
- * Decomp : A → P_fin(A)
+ * Semantic contract:
+ * For Decomp: a ↦ {a₁, ..., aₙ}, the following must hold:
+ * γ(a) ⊆ ∪ᵢ γ(aᵢ)
  * 
- * Soundness requirement:
- * γ(a) ⊆ ∪_{a_i ∈ Decomp(a)} γ(a_i)
+ * Equivalently, for semantic states:
+ * Conc(σ) ⊆ ∪ᵢ Conc(σᵢ)
+ * where Conc(σ) = [[F]] ∩ γ(a) and Conc(σᵢ) = [[F]] ∩ γ(aᵢ)
  * 
- * Decomposition splits the search space,
- * but must cover all possibilities.
+ * Approximation direction: PRESERVING
+ * Decomposition splits the search space but must cover all possibilities.
+ * Overlap and redundancy are permitted.
  */
-class Decompose {
+class DecomposeOp : public SemanticOperator {
 public:
-    virtual ~Decompose() = default;
+  virtual ~DecomposeOp() = default;
 
-    /**
-     * @brief Decompose an abstract element.
-     * 
-     * @param element The abstract element a to decompose
-     * @return A vector of abstract elements {a_i} such that
-     *         γ(a) ⊆ ∪_i γ(a_i)
-     */
-    virtual std::vector<std::unique_ptr<domain::AbstractElement>> apply(
-        const domain::AbstractElement& element) const = 0;
-
-    /**
-     * @brief Decompose a semantic state.
-     * 
-     * Decomposes the abstract element component.
-     * 
-     * @param state The semantic state to decompose
-     * @return A vector of semantic states with decomposed abstract elements
-     */
-    virtual std::vector<std::unique_ptr<state::SemanticState>> applyToState(
-        const state::SemanticState& state) const;
+  /**
+   * @brief Decompose a semantic state into multiple states.
+   * 
+   * @param σ The semantic state to decompose
+   * @return OpResult with vector of decomposed states
+   */
+  virtual util::OpResult<std::vector<std::unique_ptr<state::SemanticState>>>
+  apply(const state::SemanticState& σ) = 0;
 };
 
 /**
  * @brief Default implementation of decomposition.
  */
-class DefaultDecompose : public Decompose {
+class DefaultDecomposeOp : public DecomposeOp {
 public:
-    std::vector<std::unique_ptr<domain::AbstractElement>> apply(
-        const domain::AbstractElement& element) const override;
+  util::OpResult<std::vector<std::unique_ptr<state::SemanticState>>>
+  apply(const state::SemanticState& σ) override;
 };
 
 } // namespace operators
 } // namespace semcal
-
-#endif // SEMCAL_OPERATORS_DECOMPOSE_H

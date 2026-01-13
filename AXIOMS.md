@@ -20,9 +20,11 @@ Let:
 - $\gamma : \mathcal{A} \to \wp(\mathcal{M})$ be a concretization function.
 
 A semantic state is a pair $(F, a)$ with concrete meaning:
-$$
+\[
 \mathsf{Conc}(F,a) = \llbracket F \rrbracket \cap \gamma(a).
-$$
+\]
+
+All axioms below are stated with respect to $\mathsf{Conc}$.
 
 ---
 
@@ -30,12 +32,23 @@ $$
 
 ### Statement
 
-For a restriction operator $\mathsf{Restrict}_F : \mathcal{A} \to \mathcal{A}$:
-$$
-\gamma(\mathsf{Restrict}_F(a))
-\;\supseteq\;
-\gamma(a) \cap \llbracket F \rrbracket.
-$$
+A restriction operator
+\[
+\mathsf{Restrict} : (F,a) \mapsto (F,a')
+\]
+is **sound** if:
+\[
+\llbracket F \rrbracket \cap \gamma(a)
+\;=\;
+\llbracket F \rrbracket \cap \gamma(a').
+\]
+
+Equivalently:
+\[
+\gamma(a') \subseteq \gamma(a)
+\quad\text{and}\quad
+\gamma(a) \cap \llbracket F \rrbracket \subseteq \gamma(a').
+\]
 
 ### Intuition
 
@@ -44,7 +57,7 @@ but must never remove a genuine satisfying model.
 
 ### Typical Instances
 
-- Interval narrowing / bound tightening
+- Interval narrowing / bound tightening (sound ICP)
 - Constraint propagation
 - Word-level range propagation
 
@@ -54,17 +67,22 @@ but must never remove a genuine satisfying model.
 
 ### Statement
 
-For a decomposition operator $\mathsf{Decomp} : \mathcal{A} \to \mathcal{P}_{\mathrm{fin}}(\mathcal{A})$:
-$$
+For a decomposition operator
+\[
+\mathsf{Decomp} : a \mapsto \{a_1,\dots,a_n\},
+\]
+the following must hold:
+\[
 \gamma(a)
 \;\subseteq\;
-\bigcup_{a_i \in \mathsf{Decomp}(a)} \gamma(a_i).
-$$
+\bigcup_{i} \gamma(a_i).
+\]
 
 ### Intuition
 
 Decomposition splits the search space,
-but must **cover** all possibilities.
+but must **cover all possibilities**.
+Overlap and redundancy are permitted.
 
 ### Typical Instances
 
@@ -78,10 +96,14 @@ but must **cover** all possibilities.
 
 ### Statement
 
-If $\mathsf{Infeasible}(F,a)=\textsf{true}$, then:
-$$
+If
+\[
+\mathsf{Infeasible}(F,a)=\textsf{true},
+\]
+then:
+\[
 \llbracket F \rrbracket \cap \gamma(a) = \emptyset.
-$$
+\]
 
 ### Intuition
 
@@ -92,6 +114,7 @@ Declaring a region infeasible must be *globally correct*.
 - Cell emptiness checks
 - Box refutation
 - Theory-level conflict detection
+- LP-based refutation with certificates
 
 ---
 
@@ -99,14 +122,18 @@ Declaring a region infeasible must be *globally correct*.
 
 ### Statement
 
-For a relaxation operator $\mathsf{Relax}$:
-$$
-\llbracket F \rrbracket \subseteq \llbracket \mathsf{Relax}(F) \rrbracket.
-$$
+For a relaxation operator
+\[
+\mathsf{Relax} : F \mapsto F^\alpha,
+\]
+the following must hold:
+\[
+\llbracket F \rrbracket \subseteq \llbracket F^\alpha \rrbracket.
+\]
 
 ### Intuition
 
-Relaxation may admit extra models,
+Relaxation may admit spurious models,
 but must preserve all real ones.
 
 ### Typical Instances
@@ -121,15 +148,19 @@ but must preserve all real ones.
 
 ### Statement
 
-Given a spurious model $M \models F^\alpha$ with $M \not\models F$,
-a refinement constraint $R$ must satisfy:
-$$
+Given:
+
+- a relaxation $F^\alpha$,
+- a spurious model $M \models F^\alpha$ with $M \not\models F$,
+
+a refinement constraint $R$ is **sound** if:
+\[
 \llbracket F \rrbracket
 \subseteq
 \llbracket F^\alpha \land R \rrbracket
 \quad\text{and}\quad
 M \not\models R.
-$$
+\]
 
 ### Intuition
 
@@ -148,20 +179,26 @@ without excluding genuine solutions.
 
 ### Statement
 
-For a projection operator $\mathsf{Proj}_\pi$:
-$$
-\exists_\pi(\gamma(a))
-\subseteq
-\gamma_k(\mathsf{Proj}_\pi(a)).
-$$
+Let $\pi$ be a variable projection.
+A projection operator
+\[
+\mathsf{Proj}_\pi : a \mapsto b
+\]
+is **sound** if:
+\[
+\exists_\pi\!\left(\gamma(a)\right)
+\;\subseteq\;
+\gamma(b).
+\]
 
 ### Intuition
 
-Projection must safely over-approximate existential elimination.
+Projection must safely **over-approximate**
+existential elimination.
 
 ### Typical Instances
 
-- Quantifier elimination
+- Quantifier elimination (over-approximate)
 - Variable elimination
 - CAD projection
 
@@ -171,12 +208,17 @@ Projection must safely over-approximate existential elimination.
 
 ### Statement
 
-For a lifting operator $\mathsf{Lift}_\pi$:
-$$
-\gamma(\mathsf{Lift}_\pi(b))
-\subseteq
-\pi^{-1}(\gamma_k(b)).
-$$
+Let $\pi$ be a projection.
+A lifting operator
+\[
+\mathsf{Lift}_\pi : b \mapsto a
+\]
+is **sound** if:
+\[
+\gamma(a)
+\;\subseteq\;
+\pi^{-1}\!\left(\gamma(b)\right).
+\]
 
 ### Intuition
 
@@ -195,8 +237,8 @@ without introducing invalid ones.
 
 | Axiom | Semantic Role |
 |------:|---------------|
-| R | Sound narrowing |
-| D | Sound space splitting |
+| R | Sound contraction (no solution loss) |
+| D | Sound space covering |
 | I | Sound refutation |
 | A | Sound over-approximation |
 | C | Sound refinement |
@@ -205,5 +247,83 @@ without introducing invalid ones.
 
 These axioms constitute the **entire semantic contract** of SemCal.
 Any algorithm satisfying the relevant axioms is a valid SemCal instantiation.
+
+---
+
+## Approximation Directions
+
+When implementing operators, it is crucial to specify the
+**approximation direction** to ensure correct composition.
+
+Each operator must declare how it approximates
+the concrete meaning $\mathsf{Conc}(\sigma)$.
+
+### Direction Types
+
+- **PRESERVING**  
+  Exact semantic preservation:
+  \[
+  \mathsf{Conc}(\sigma') = \mathsf{Conc}(\sigma)
+  \]
+
+- **OVER\_APPROX**  
+  May introduce spurious models:
+  \[
+  \mathsf{Conc}(\sigma) \subseteq \mathsf{Conc}(\sigma')
+  \]
+
+- **UNDER\_APPROX**  
+  May miss real models:
+  \[
+  \mathsf{Conc}(\sigma') \subseteq \mathsf{Conc}(\sigma)
+  \]
+
+- **REFUTE\_CERTIFIED**  
+  Only for refutation:
+  \[
+  \text{If } \mathsf{Infeasible}(\sigma)=\textsf{UNSAT},
+  \text{ then } \mathsf{Conc}(\sigma)=\emptyset
+  \]
+
+---
+
+### Operator Directions
+
+| Axiom | Default Direction | Notes |
+|------:|------------------:|-------|
+| R (Restrict) | PRESERVING | Sound contraction: no satisfying model removed |
+| D (Decompose) | PRESERVING | Coverage: $\mathsf{Conc}(\sigma) \subseteq \bigcup_i \mathsf{Conc}(\sigma_i)$ |
+| I (Infeasible) | REFUTE\_CERTIFIED | UNSAT claims must be globally correct |
+| A (Relax) | OVER\_APPROX | By definition |
+| C (Refine) | PRESERVING | Real models must be preserved |
+| P (Project) | OVER\_APPROX | Existential elimination |
+| L (Lift) | UNDER\_APPROX | Candidate reconstruction |
+
+---
+
+### Backend-Specific Directions
+
+Different backends may instantiate operators with different directions:
+
+- **CAD**
+  - Project: OVER\_APPROX
+  - Decompose: PRESERVING
+  - Infeasible: REFUTE\_CERTIFIED
+  - Lift: UNDER\_APPROX
+
+- **LP / Simplex**
+  - Relax: OVER\_APPROX (standard LP relaxation)
+  - Infeasible: REFUTE\_CERTIFIED (Farkas certificate)
+  - Refine: PRESERVING (cuts preserve real solutions)
+
+- **ICP**
+  - Restrict: PRESERVING (sound interval contraction)
+  - Decompose: PRESERVING (box splitting)
+  - Infeasible: REFUTE\_CERTIFIED (empty box detection)
+
+**Critical.**
+When composing operators, approximation directions must be compatible.
+For example, composing an OVER\_APPROX operator with an UNDER\_APPROX
+operator requires explicit semantic justification.
 
 ---

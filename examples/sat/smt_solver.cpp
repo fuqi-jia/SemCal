@@ -5,23 +5,23 @@
 using namespace semcal;
 
 /**
- * @brief Example SAT solver built using SemCal operators.
+ * @brief Example SMT solver built using SemCal operators.
  * 
- * This demonstrates how to construct a pure Boolean satisfiability (SAT) solver
- * by orchestrating semantic operators for propositional logic.
+ * This demonstrates how to construct a Satisfiability Modulo Theories (SMT) solver
+ * by orchestrating semantic operators.
  */
-class SimpleSATSolver {
+class SimpleSMTSolver {
 private:
     std::unique_ptr<orchestration::Pipeline> pipeline_;
 
 public:
-    SimpleSATSolver() {
+    SimpleSMTSolver() {
         pipeline_ = orchestration::PipelineFactory::createDefault();
     }
 
     /**
-     * @brief Check if a Boolean formula is satisfiable.
-     * @param formula The propositional formula to check
+     * @brief Check if a formula is satisfiable.
+     * @param formula The formula to check
      * @return true if satisfiable, false otherwise
      */
     bool isSatisfiable(const core::Formula& formula) {
@@ -42,13 +42,13 @@ public:
 };
 
 int main() {
-    std::cout << "SemCal SAT Solver Example" << std::endl;
+    std::cout << "SemCal SMT Solver Example" << std::endl;
     std::cout << "=========================" << std::endl;
 
-    // Create a simple Boolean formula: (a ∨ b) ∧ (¬a ∨ c)
-    auto formula1 = std::make_unique<core::ConcreteFormula>("(and (or a b) (or (not a) c))");
+    // Create a simple SMT formula with theory constraints: (x > 0) ∧ (x < 10)
+    auto formula1 = std::make_unique<core::ConcreteFormula>("(and (> x 0) (< x 10))");
     
-    SimpleSATSolver solver;
+    SimpleSMTSolver solver;
     bool result = solver.isSatisfiable(*formula1);
     
     std::cout << "Formula: " << formula1->toString() << std::endl;

@@ -12,11 +12,15 @@ namespace operators {
 /**
  * @brief Restoration (Refinement) operator (Axiom C).
  * 
- * Given a spurious model M ⊨ F^α with M ⊭ F,
- * a refinement constraint R must satisfy:
- * - [[F]] ⊆ [[F^α ∧ R]]
- * - M ⊭ R
+ * Semantic contract:
+ * Given:
+ * - a relaxation F^α,
+ * - a spurious model M ⊨ F^α with M ⊭ F,
  * 
+ * a refinement constraint R is sound if:
+ * [[F]] ⊆ [[F^α ∧ R]]  and  M ⊭ R
+ * 
+ * Approximation direction: PRESERVING
  * Refinement removes spurious behavior
  * without excluding genuine solutions.
  */

@@ -1,10 +1,9 @@
-#ifndef SEMCAL_OPERATORS_PROJECT_H
-#define SEMCAL_OPERATORS_PROJECT_H
-
-#include "../domain/abstract_domain.h"
+#pragma once
+#include "operator.h"
+#include "../util/op_result.h"
+#include "../state/semantic_state.h"
 #include <vector>
 #include <string>
-#include <memory>
 
 namespace semcal {
 namespace operators {
@@ -12,51 +11,40 @@ namespace operators {
 /**
  * @brief Projection operator (Axiom P).
  * 
- * Proj_π : A → A_k
+ * Semantic contract:
+ * Let π be a variable projection.
+ * For Proj_π: a ↦ b, the following must hold:
+ * ∃_π(γ(a)) ⊆ γ(b)
  * 
- * Soundness requirement:
- * ∃_π(γ(a)) ⊆ γ_k(Proj_π(a))
- * 
+ * Approximation direction: OVER_APPROX
  * Projection must safely over-approximate existential elimination.
+ * May introduce spurious models, but preserves all real ones.
  */
-class Project {
+class ProjectOp : public SemanticOperator {
 public:
-    virtual ~Project() = default;
+  virtual ~ProjectOp() = default;
 
-    /**
-     * @brief Project an abstract element onto a subset of variables.
-     * 
-     * @param element The abstract element a to project
-     * @param variables The set of variables π to project onto
-     * @return The projected abstract element Proj_π(a)
-     */
-    virtual std::unique_ptr<domain::AbstractElement> apply(
-        const domain::AbstractElement& element,
-        const std::vector<std::string>& variables) const = 0;
-
-    /**
-     * @brief Project onto a single variable.
-     * 
-     * @param element The abstract element to project
-     * @param variable The variable to project onto
-     * @return The projected abstract element
-     */
-    virtual std::unique_ptr<domain::AbstractElement> apply(
-        const domain::AbstractElement& element,
-        const std::string& variable) const;
+  /**
+   * @brief Project a semantic state onto a subset of variables.
+   * 
+   * @param σ The semantic state to project
+   * @param elim_vars Variables to eliminate
+   * @return OpResult with projected state
+   */
+  virtual util::OpResult<std::unique_ptr<state::SemanticState>>
+  apply(const state::SemanticState& σ,
+        const std::vector<std::string>& elim_vars) = 0;
 };
 
 /**
  * @brief Default implementation of projection.
  */
-class DefaultProject : public Project {
+class DefaultProjectOp : public ProjectOp {
 public:
-    std::unique_ptr<domain::AbstractElement> apply(
-        const domain::AbstractElement& element,
-        const std::vector<std::string>& variables) const override;
+  util::OpResult<std::unique_ptr<state::SemanticState>>
+  apply(const state::SemanticState& σ,
+        const std::vector<std::string>& elim_vars) override;
 };
 
 } // namespace operators
 } // namespace semcal
-
-#endif // SEMCAL_OPERATORS_PROJECT_H

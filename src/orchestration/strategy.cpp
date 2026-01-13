@@ -1,5 +1,6 @@
 #include "orchestration/strategy.h"
 #include "orchestration/pipeline.h"
+#include "../include/util/op_result.h"
 #include <queue>
 #include <algorithm>
 #include <vector>
@@ -29,22 +30,25 @@ std::vector<std::unique_ptr<state::SemanticState>> DepthFirstStrategy::execute(
         }
         
         // Check if infeasible
-        if (pipeline.getInfeasible().check(
-                *state,
-                pipeline.getSemantics(),
-                pipeline.getConcretization())) {
+        auto infeasibleResult = pipeline.getInfeasible().apply(*state);
+        if (infeasibleResult.status == util::OpStatus::UNSAT) {
             continue;
         }
         
         // Try to decompose
-        auto decomposed = pipeline.getDecompose().applyToState(*state);
+        auto decomposeResult = pipeline.getDecompose().apply(*state);
+        if (decomposeResult.status != util::OpStatus::OK || !decomposeResult.value.has_value()) {
+            continue;
+        }
+        auto& decomposed = decomposeResult.value.value();
         
         if (decomposed.size() == 1 && decomposed[0]->toString() == state->toString()) {
             // No decomposition occurred, this is a leaf
             result.push_back(std::move(state));
         } else {
             // Add decomposed states to stack
-            for (auto& decomposedState : decomposed) {
+            for (size_t i = 0; i < decomposed.size(); ++i) {
+                auto decomposedState = std::move(decomposed[i]);
                 stack.push_back({std::move(decomposedState), depth + 1});
             }
         }
@@ -70,22 +74,25 @@ std::vector<std::unique_ptr<state::SemanticState>> BreadthFirstStrategy::execute
         queue.pop();
         
         // Check if infeasible
-        if (pipeline.getInfeasible().check(
-                *state,
-                pipeline.getSemantics(),
-                pipeline.getConcretization())) {
+        auto infeasibleResult = pipeline.getInfeasible().apply(*state);
+        if (infeasibleResult.status == util::OpStatus::UNSAT) {
             continue;
         }
         
         // Try to decompose
-        auto decomposed = pipeline.getDecompose().applyToState(*state);
+        auto decomposeResult = pipeline.getDecompose().apply(*state);
+        if (decomposeResult.status != util::OpStatus::OK || !decomposeResult.value.has_value()) {
+            continue;
+        }
+        auto& decomposed = decomposeResult.value.value();
         
         if (decomposed.size() == 1 && decomposed[0]->toString() == state->toString()) {
             // No decomposition occurred, this is a leaf
             result.push_back(std::move(state));
         } else {
             // Add decomposed states to queue
-            for (auto& decomposedState : decomposed) {
+            for (size_t i = 0; i < decomposed.size(); ++i) {
+                auto decomposedState = std::move(decomposed[i]);
                 queue.push(std::move(decomposedState));
             }
         }
@@ -122,22 +129,25 @@ std::vector<std::unique_ptr<state::SemanticState>> BestFirstStrategy::execute(
         queue.pop();
         
         // Check if infeasible
-        if (pipeline.getInfeasible().check(
-                *state,
-                pipeline.getSemantics(),
-                pipeline.getConcretization())) {
+        auto infeasibleResult = pipeline.getInfeasible().apply(*state);
+        if (infeasibleResult.status == util::OpStatus::UNSAT) {
             continue;
         }
         
         // Try to decompose
-        auto decomposed = pipeline.getDecompose().applyToState(*state);
+        auto decomposeResult = pipeline.getDecompose().apply(*state);
+        if (decomposeResult.status != util::OpStatus::OK || !decomposeResult.value.has_value()) {
+            continue;
+        }
+        auto& decomposed = decomposeResult.value.value();
         
         if (decomposed.size() == 1 && decomposed[0]->toString() == state->toString()) {
             // No decomposition occurred, this is a leaf
             result.push_back(std::move(state));
         } else {
             // Add decomposed states to queue
-            for (auto& decomposedState : decomposed) {
+            for (size_t i = 0; i < decomposed.size(); ++i) {
+                auto decomposedState = std::move(decomposed[i]);
                 queue.push(std::move(decomposedState));
             }
         }

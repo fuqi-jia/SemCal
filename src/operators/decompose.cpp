@@ -1,31 +1,16 @@
-#include "operators/decompose.h"
-#include "state/semantic_state.h"
+#include "../../include/operators/decompose.h"
 
 namespace semcal {
 namespace operators {
 
-std::vector<std::unique_ptr<state::SemanticState>> Decompose::applyToState(
-    const state::SemanticState& state) const {
-    auto decomposedElements = apply(state.getAbstractElement());
-    std::vector<std::unique_ptr<state::SemanticState>> result;
-    
-    for (auto& element : decomposedElements) {
-        result.push_back(std::make_unique<state::SemanticState>(
-            state.getFormula().clone(),
-            std::move(element)
-        ));
-    }
-    
-    return result;
-}
-
-std::vector<std::unique_ptr<domain::AbstractElement>> DefaultDecompose::apply(
-    const domain::AbstractElement& element) const {
-    // Default implementation: returns a single-element vector
-    // In a real implementation, this would split the element
-    std::vector<std::unique_ptr<domain::AbstractElement>> result;
-    result.push_back(element.clone());
-    return result;
+util::OpResult<std::vector<std::unique_ptr<state::SemanticState>>>
+DefaultDecomposeOp::apply(const state::SemanticState& σ) {
+  // Default implementation: returns a single-element vector (no decomposition)
+  std::vector<std::unique_ptr<state::SemanticState>> result;
+  result.push_back(σ.clone());
+  return util::OpResult<std::vector<std::unique_ptr<state::SemanticState>>>::ok(
+    std::move(result)
+  );
 }
 
 } // namespace operators

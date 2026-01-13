@@ -12,11 +12,14 @@ namespace operators {
 /**
  * @brief Restriction operator (Axiom R).
  * 
- * Restrict_F : A → A
+ * Semantic contract:
+ * A restriction operator Restrict: (F,a) ↦ (F,a') is sound if:
+ * [[F]] ∩ γ(a) = [[F]] ∩ γ(a')
  * 
- * Soundness requirement:
- * γ(Restrict_F(a)) ⊇ γ(a) ∩ [[F]]
+ * Equivalently:
+ * γ(a') ⊆ γ(a)  and  γ(a) ∩ [[F]] ⊆ γ(a')
  * 
+ * Approximation direction: PRESERVING
  * Restriction may remove spurious candidates,
  * but must never remove a genuine satisfying model.
  */

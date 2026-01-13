@@ -14,12 +14,12 @@ namespace orchestration {
 
 Pipeline::Pipeline(
     std::unique_ptr<operators::Restrict> restrict,
-    std::unique_ptr<operators::Decompose> decompose,
-    std::unique_ptr<operators::Infeasible> infeasible,
+    std::unique_ptr<operators::DecomposeOp> decompose,
+    std::unique_ptr<operators::InfeasibleOp> infeasible,
     std::unique_ptr<operators::Relax> relax,
     std::unique_ptr<operators::Refine> refine,
-    std::unique_ptr<operators::Project> project,
-    std::unique_ptr<operators::Lift> lift,
+    std::unique_ptr<operators::ProjectOp> project,
+    std::unique_ptr<operators::LiftOp> lift,
     std::shared_ptr<core::Semantics> semantics,
     std::shared_ptr<domain::Concretization> concretization)
     : restrict_(std::move(restrict)),
@@ -43,12 +43,12 @@ PipelineResult Pipeline::execute(
 std::unique_ptr<Pipeline> PipelineFactory::createDefault() {
     // Create default operator implementations
     auto restrict = std::make_unique<operators::DefaultRestrict>();
-    auto decompose = std::make_unique<operators::DefaultDecompose>();
-    auto infeasible = std::make_unique<operators::DefaultInfeasible>();
+    auto decompose = std::make_unique<operators::DefaultDecomposeOp>();
+    auto infeasible = std::make_unique<operators::DefaultInfeasibleOp>();
     auto relax = std::make_unique<operators::DefaultRelax>();
     auto refine = std::make_unique<operators::DefaultRefine>();
-    auto project = std::make_unique<operators::DefaultProject>();
-    auto lift = std::make_unique<operators::DefaultLift>();
+    auto project = std::make_unique<operators::DefaultProjectOp>();
+    auto lift = std::make_unique<operators::DefaultLiftOp>();
     
     // Create default semantics and concretization
     auto semantics = std::make_shared<core::DefaultSemantics>();

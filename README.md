@@ -238,7 +238,8 @@ for future SMT solver research.
 
 SemCal does not define applications, but supports them via orchestration:
 
-- **SAT**: is $\llbracket F \rrbracket \neq \emptyset$?
+- **SAT**: is $\llbracket F \rrbracket \neq \emptyset$? (pure Boolean satisfiability)
+- **SMT**: satisfiability modulo theories (with theory constraints)
 - **OPT**: extremal values over $\llbracket F \rrbracket$
 - **COUNT / VOLUME**: measure of $\llbracket F \rrbracket$
 - **SAMPLE**: draw elements from $\llbracket F \rrbracket$
@@ -262,6 +263,29 @@ Concrete algorithms (e.g., CAD, ICP, bit-level reasoning) may be integrated
 
 SemCal privileges **no algorithm** and **no solver architecture**.
 
+### 11.1 Backend Adapter Architecture
+
+SemCal provides a **backend adapter architecture** that allows concrete algorithms
+to be integrated as operator implementations:
+
+- **Backend Capability Interfaces**: Each backend (CAD, LP, ICP, SAT) declares
+  which operators it supports and their approximation directions
+- **Unified Result Type**: All operators return `OpResult<T, Witness>` with
+  status (OK/UNSAT/UNKNOWN/PARTIAL/ERROR), value, and optional witness
+- **Soundness Witnesses**: Backends can provide certificates/proofs explaining
+  why their results satisfy the axioms
+
+See `docs/instantiation.md` for a complete cookbook on instantiating backends.
+
+### 11.2 Example Backends
+
+- **CAD Backend**: Implements Project, Decompose, Infeasible, Lift operators
+- **LP/Simplex Backend**: Implements Relax, Infeasible, Refine, Optimize operators
+- **ICP Backend**: Implements Restrict, Decompose, Infeasible operators
+
+Each backend specifies its approximation direction (over-approx, under-approx,
+preserving, or refute-certified) to ensure correct composition.
+
 ---
 
 ## 12. Repository Structure
@@ -273,6 +297,7 @@ SemCal/
 ├── README.md
 ├── AXIOMS.md
 ├── COVERAGE.md
+├── build.sh                 # Build script
 │
 ├── include/                 # Public C++ interfaces (semantic contracts)
 │   ├── semcal.h             # ⭐ Umbrella header (one-line include)
@@ -285,7 +310,8 @@ SemCal/
 │   ├── domain/
 │   │   ├── abstract_domain.h
 │   │   ├── concretization.h
-│   │   └── galois.h
+│   │   ├── galois.h
+│   │   └── top_element.h
 │   │
 │   ├── state/
 │   │   └── semantic_state.h
@@ -303,19 +329,37 @@ SemCal/
 │   │   ├── pipeline.h
 │   │   └── strategy.h
 │   │
+│   ├── backends/              # Backend capability interfaces
+│   │   ├── backend_capability.h
+│   │   ├── cad_backend.h      # CAD backend interface
+│   │   ├── lp_backend.h       # LP/Simplex backend interface
+│   │   └── icp_backend.h      # ICP backend interface
+│   │
 │   └── util/
-│       └── result.h
+│       └── result.h           # OpResult<T, Witness> type
 │
 ├── src/                     # Reference / default implementations
 │   ├── core/
 │   ├── domain/
 │   ├── operators/
-│   └── orchestration/
+│   ├── orchestration/
+│   ├── backends/             # Backend implementations
+│   │   ├── cad_backend.cpp
+│   │   ├── lp_backend.cpp
+│   │   └── icp_backend.cpp
+│   └── util/
 │
 ├── examples/                # Example solvers built from SemCal
-│   ├── sat/
-│   ├── omt/
-│   └── counting/
+│   ├── sat/                 # SAT and SMT solver examples
+│   │   ├── sat_solver.cpp  # Pure Boolean SAT solver
+│   │   └── smt_solver.cpp  # SMT solver (with theories)
+│   ├── omt/                # Optimization Modulo Theories
+│   │   └── omt_solver.cpp
+│   ├── counting/           # Model counting
+│   │   └── counting_solver.cpp
+│   └── pipelines/          # Backend orchestration examples
+│       ├── cad_refute_first.cpp  # CAD refute-first pipeline
+│       └── lp_guided_refine.cpp  # LP-guided refinement pipeline
 │
 ├── external/                # Third-party libraries (submodules or vendored)
 │   ├── SMTParser/
@@ -325,10 +369,39 @@ SemCal/
 │
 ├── docs/
 │   ├── design.md
-│   └── solver_patterns.md
+│   ├── solver_patterns.md
+│   └── instantiation.md     # Backend instantiation cookbook
 │
 ├── CMakeLists.txt
 └── LICENSE
+```
+
+### Building and Running Examples
+
+To build the project:
+
+```bash
+./build.sh
+```
+
+This will create:
+- Library: `build/libsemcal.a`
+- Examples:
+  - `build/examples/sat/sat_solver` - Pure Boolean SAT solver
+  - `build/examples/sat/smt_solver` - SMT solver with theory constraints
+  - `build/examples/omt/omt_solver` - Optimization Modulo Theories solver
+  - `build/examples/counting/counting_solver` - Model counting solver
+  - `build/examples/pipelines/cad_refute_first` - CAD refute-first pipeline
+  - `build/examples/pipelines/lp_guided_refine` - LP-guided refinement pipeline
+
+Run examples:
+```bash
+./build/examples/sat/sat_solver
+./build/examples/sat/smt_solver
+./build/examples/omt/omt_solver
+./build/examples/counting/counting_solver
+./build/examples/pipelines/cad_refute_first
+./build/examples/pipelines/lp_guided_refine
 ```
 ---
 

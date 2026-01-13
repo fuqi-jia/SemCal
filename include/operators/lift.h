@@ -1,10 +1,7 @@
-#ifndef SEMCAL_OPERATORS_LIFT_H
-#define SEMCAL_OPERATORS_LIFT_H
-
-#include "../domain/abstract_domain.h"
-#include <vector>
-#include <string>
-#include <memory>
+#pragma once
+#include "operator.h"
+#include "../util/op_result.h"
+#include "../state/semantic_state.h"
 
 namespace semcal {
 namespace operators {
@@ -12,52 +9,40 @@ namespace operators {
 /**
  * @brief Lifting operator (Axiom L).
  * 
- * Lift_π : A_k → A
+ * Semantic contract:
+ * Let π be a projection.
+ * For Lift_π: b ↦ a, the following must hold:
+ * γ(a) ⊆ π^{-1}(γ(b))
  * 
- * Soundness requirement:
- * γ(Lift_π(b)) ⊆ π^{-1}(γ_k(b))
- * 
- * Lifting reconstructs higher-dimensional candidates
- * without introducing invalid ones.
+ * Approximation direction: UNDER_APPROX
+ * Lifting reconstructs higher-dimensional candidates without introducing invalid ones.
+ * May miss some valid candidates, but never introduces spurious ones.
  */
-class Lift {
+class LiftOp : public SemanticOperator {
 public:
-    virtual ~Lift() = default;
+  virtual ~LiftOp() = default;
 
-    /**
-     * @brief Lift a projected abstract element back to full space.
-     * 
-     * @param projectedElement The projected abstract element b
-     * @param variables The set of variables π that were projected onto
-     * @return The lifted abstract element Lift_π(b)
-     */
-    virtual std::unique_ptr<domain::AbstractElement> apply(
-        const domain::AbstractElement& projectedElement,
-        const std::vector<std::string>& variables) const = 0;
-
-    /**
-     * @brief Lift from a single variable.
-     * 
-     * @param projectedElement The projected abstract element
-     * @param variable The variable that was projected onto
-     * @return The lifted abstract element
-     */
-    virtual std::unique_ptr<domain::AbstractElement> apply(
-        const domain::AbstractElement& projectedElement,
-        const std::string& variable) const;
+  /**
+   * @brief Lift a projected state back to higher dimension.
+   * 
+   * @param low The projected (lower-dimensional) state
+   * @param high_context The context from higher dimension
+   * @return OpResult with lifted state
+   */
+  virtual util::OpResult<std::unique_ptr<state::SemanticState>>
+  apply(const state::SemanticState& low,
+        const state::SemanticState& high_context) = 0;
 };
 
 /**
  * @brief Default implementation of lifting.
  */
-class DefaultLift : public Lift {
+class DefaultLiftOp : public LiftOp {
 public:
-    std::unique_ptr<domain::AbstractElement> apply(
-        const domain::AbstractElement& projectedElement,
-        const std::vector<std::string>& variables) const override;
+  util::OpResult<std::unique_ptr<state::SemanticState>>
+  apply(const state::SemanticState& low,
+        const state::SemanticState& high_context) override;
 };
 
 } // namespace operators
 } // namespace semcal
-
-#endif // SEMCAL_OPERATORS_LIFT_H
