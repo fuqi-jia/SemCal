@@ -10,7 +10,7 @@
  * under-approximations or implied linear constraints.
  */
 
-#include "semcal.h"
+#include "semx.h"
 #include "../include/backends/lp_stub.h"
 #include "../include/operators/infeasible_lp.h"
 #include <iostream>

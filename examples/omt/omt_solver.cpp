@@ -1,4 +1,4 @@
-#include "semcal.h"
+#include "semx.h"
 #include <iostream>
 #include <memory>
 #include <limits>
@@ -13,11 +13,11 @@ using namespace semcal;
  */
 class SimpleOMTSolver {
 private:
-    std::unique_ptr<orchestration::Pipeline> pipeline_;
+    std::unique_ptr<solver::strategies::LegacyOperatorPipeline> pipeline_;
 
 public:
     SimpleOMTSolver() {
-        pipeline_ = orchestration::PipelineFactory::createDefault();
+        pipeline_ = solver::strategies::LegacyPipelineFactory::createDefault();
     }
 
     /**
@@ -41,7 +41,7 @@ public:
             // In a real implementation, extract objective value from state
             return 0.0;
         };
-        orchestration::BestFirstStrategy strategy(heuristic);
+        solver::strategies::LegacyBestFirstStrategy strategy(heuristic);
         auto results = strategy.execute(*state, *pipeline_);
 
         // Extract minimum value from results

@@ -1,5 +1,32 @@
-# SemCal
-## A Semantic Calculus for Constraint Reasoning
+# SemX / SemCal
+## A Verified Semantic Framework for Solver Construction
+
+**SemX** is a semantic framework for constructing **search-based constraint solvers**
+as **first-class semantic programs**.
+
+SemX separates:
+- **semantic truth** from **algorithmic behavior**,
+- **soundness** from **search heuristics**,
+- **verified reasoning** from **high-performance execution**.
+
+The goal of SemX is not to provide a solver,
+but to provide a **correct-by-construction foundation** for building solvers.
+
+---
+
+## System Architecture
+
+SemX is organized into four strictly layered subsystems:
+
+```
+SemX
+├── SemCal     : Axiomatic Semantic Calculus
+├── SemKernel  : Verified Semantic Kernel
+├── SemSearch  : Generic Search and Execution Engine
+└── SemSolver  : Concrete Solver Instances
+```
+
+### SemCal: Axiomatic Semantic Calculus
 
 **SemCal** is a solver-agnostic *semantic calculus* for logical constraint reasoning.
 It provides a **minimal axiomatization of semantic operators over model sets**
@@ -12,6 +39,41 @@ independently of how they are implemented (e.g., CAD, ICP, SAT, bit-blasting).
 Crucially, **SemCal is designed to make it easy to construct new solvers**:
 any reasoning system built by orchestrating SemCal operators
 inherits semantic soundness by construction.
+
+### SemKernel: Verified Semantic Kernel
+
+**SemKernel** is the only trusted component in SemX.
+Its sole responsibility is to **validate semantic claims made by solvers**.
+
+SemKernel is not a solver.
+It performs no search, no optimization, and no heuristics.
+
+All UNSAT or refutation claims must be accompanied by **checkable evidence**.
+
+### SemSearch: Generic Search Engine
+
+**SemSearch** provides **search infrastructure only**:
+- state scheduling (DFS, BFS, best-first)
+- backtracking and branching
+- execution of solver strategies
+- resource management
+
+SemSearch is **solver-agnostic**.
+It executes solver programs, it does not define them.
+
+### SemSolver: Concrete Solver Programs
+
+A **SemSolver** is defined by:
+- a solver strategy (program),
+- a set of semantic operators,
+- backend oracles,
+- a search policy.
+
+Each SemSolver is:
+- a concrete, reproducible artifact
+- executable under SemSearch
+- validated by SemKernel
+- comparable to other solvers
 
 ---
 
@@ -156,18 +218,24 @@ but enables optimal abstraction and refinement.
 
 ## 5. Semantic States
 
-A **semantic state** is a pair:
+A **semantic state** is a triple:
 
 $$
-\sigma = (F, a), \quad a \in \mathcal{A}.
+\sigma = (F, a, \mu)
 $$
+
+where:
+- $F$ is a constraint (formula)
+- $a \in \mathcal{A}$ is an abstract element
+- $\mu$ is a partial model (partial valuation)
 
 Its concrete meaning is:
 
 $$
-\mathsf{Conc}(\sigma) = [[F]] \cap \gamma(a).
+\mathsf{Conc}(\sigma) = \{ M \in [[F]] \cap \gamma(a) \mid M \supseteq \mu \}
 $$
 
+Partial models represent **search decisions**.
 All semantic operators are required to be sound with respect to this meaning.
 
 ---
@@ -177,8 +245,16 @@ All semantic operators are required to be sound with respect to this meaning.
 Semantic operators transform semantic states or their components.
 They are defined solely by **soundness axioms**.
 
-(Restriction, Decomposition, Infeasibility, Relaxation, Restoration,
-Projection, and Lifting — see `AXIOMS.md` for the formal axioms.)
+The core operators are:
+- **R (Restrict)**: Sound contraction
+- **D (Decompose)**: Sound space covering
+- **I (Infeasible)**: Sound refutation
+- **A (Relax)**: Sound over-approximation
+- **C (Refine)**: Sound refinement
+- **S (Shadow)**: Sound semantic shadowing
+- **L (Lift)**: Sound lifting
+
+See `AXIOMS.md` for the formal axioms and semantic guarantees.
 
 ---
 
@@ -192,7 +268,7 @@ in the SMT reasoning taxonomy, including:
 - optimization and relaxed feasibility
 - model enumeration, counting, and integration
 - symbolic sampling
-- quantifier elimination and projection
+- quantifier elimination and shadowing
 - invariant and lemma synthesis
 
 Tasks that depend on **search heuristics, optimization strategies,
@@ -203,17 +279,23 @@ SemCal separates **semantic soundness** from **algorithmic strategy**.
 
 ---
 
-## 8. Solver Construction via SemCal
+## 8. Solver Construction via SemX
 
-A central goal of SemCal is to **enable the construction of new solvers**
-by assembling semantic operators.
+A central goal of SemX is to **enable the construction of new solvers**
+as first-class semantic programs.
 
-A solver in the SemCal sense is:
+A **SemSolver** is defined by:
+- a solver strategy (program),
+- a set of semantic operators,
+- backend oracles,
+- a search policy.
 
-> an orchestration of semantic operators
-> over semantic states $(F, a)$.
+The solver strategy is a program composed of:
+- semantic operators (Restrict, Decompose, Infeasible, Relax, Refine, Shadow, Lift)
+- search actions (extend partial model, branch, push/pop)
+- control flow (conditionals, loops, nondeterministic choice)
 
-SemCal deliberately exposes **operator-level interfaces** rather than
+SemX deliberately exposes **operator-level interfaces** rather than
 monolithic solver APIs. This allows researchers to:
 
 - prototype new solver architectures
@@ -223,18 +305,19 @@ monolithic solver APIs. This allows researchers to:
 
 ### Soundness by Construction
 
-Any solver pipeline that uses only operators satisfying
-the SemCal axioms (R, D, I, A, C, P, L)
-is **semantically sound by construction**.
+Any solver built using SemX components is **semantically sound by construction**:
+- SemCal operators satisfy soundness axioms
+- SemKernel validates all semantic claims
+- SemSearch provides solver-agnostic execution
 
-SemCal therefore provides a **certified substrate**
+SemX therefore provides a **certified substrate**
 for future SMT solver research.
 
 ---
 
 ## 9. Applications (Outside SemCal)
 
-SemCal does not define applications, but supports them via orchestration:
+SemCal does not define applications, but supports them via solver construction:
 
 - **SAT**: is $[[F]] \neq \emptyset$? (pure Boolean satisfiability)
 - **SMT**: satisfiability modulo theories (with theory constraints)
@@ -246,11 +329,19 @@ SemCal does not define applications, but supports them via orchestration:
 
 ## 10. Soundness Guarantee
 
-Any reasoning pipeline that uses only operators satisfying the SemCal axioms
-(R, D, I, A, C, P, L) is **semantically sound** with respect to the original
-constraint $F$.
+> **If SemKernel accepts a solver trace,
+> then the solver result is semantically correct.**
 
-Completeness and termination are deliberately left unspecified.
+This guarantee is independent of:
+- search order
+- heuristics
+- termination
+- performance
+
+Completeness and termination are intentionally unspecified.
+
+Any solver built using SemX components is **semantically sound** with respect to the original
+constraint $F$, as validated by SemKernel.
 
 ---
 
@@ -277,78 +368,84 @@ See `docs/instantiation.md` for a complete cookbook on instantiating backends.
 
 ### 11.2 Example Backends
 
-- **CAD Backend**: Implements Project, Decompose, Infeasible, Lift operators
-- **LP/Simplex Backend**: Implements Relax, Infeasible, Refine, Optimize operators
+- **CAD Backend**: Implements Shadow, Decompose, Infeasible, Lift operators
+- **LP/Simplex Backend**: Implements Relax, Infeasible, Refine operators
 - **ICP Backend**: Implements Restrict, Decompose, Infeasible operators
 
-Each backend specifies its approximation direction (over-approx, under-approx,
-preserving, or refute-certified) to ensure correct composition.
+Each backend specifies its semantic guarantee (PRESERVING, OVER_APPROX, UNDER_APPROX,
+COVERING, or REFUTE_CERTIFIED) to ensure correct composition.
 
 ---
 
 ## 12. Repository Structure
 
-The SemCal repository is organized as follows:
+The SemX repository is organized according to the four-layer architecture:
 
 ```text
 SemCal/
 ├── README.md
-├── AXIOMS.md
+├── SemX.md          # SemX architecture documentation
+├── AXIOMS.md        # SemCal axioms
 ├── COVERAGE.md
 ├── build.sh                 # Build script
 ├── commit.sh                # Auto commit script
 │
 ├── include/                 # Public C++ interfaces (semantic contracts)
-│   ├── semcal.h             # ⭐ Umbrella header (one-line include)
+│   ├── semx.h               # ⭐ Umbrella header (one-line include)
 │   │
-│   ├── core/
-│   │   ├── model.h
-│   │   ├── formula.h
-│   │   └── semantics.h
+│   ├── semcal/               # SemCal: Axiomatic Semantic Calculus
+│   │   ├── core/              # Core semantic definitions
+│   │   │   ├── model.h
+│   │   │   ├── partial_model.h   # Partial models (μ)
+│   │   │   ├── formula.h
+│   │   │   └── semantics.h
+│   │   ├── domain/            # Abstract domains
+│   │   │   ├── abstract_domain.h
+│   │   │   ├── concretization.h
+│   │   │   ├── galois.h
+│   │   │   └── top_element.h
+│   │   ├── state/             # Semantic states (F, a, μ)
+│   │   │   └── semantic_state.h
+│   │   ├── operators/         # Semantic operators
+│   │   │   ├── restrict.h
+│   │   │   ├── decompose.h
+│   │   │   ├── infeasible.h
+│   │   │   ├── relax.h
+│   │   │   ├── refine.h
+│   │   │   ├── shadow.h
+│   │   │   └── lift.h
+│   │   ├── backends/          # Backend capability interfaces
+│   │   │   ├── cad_backend.h
+│   │   │   ├── lp_backend.h
+│   │   │   └── icp_backend.h
+│   │   └── util/              # Utilities
+│   │       └── op_result.h     # OpResult<T, Witness> type
 │   │
-│   ├── domain/
-│   │   ├── abstract_domain.h
-│   │   ├── concretization.h
-│   │   ├── galois.h
-│   │   └── top_element.h
+│   ├── semkernel/             # SemKernel: Verified Semantic Kernel
+│   │   └── kernel.h
 │   │
-│   ├── state/
-│   │   └── semantic_state.h
+│   ├── semsearch/             # SemSearch: Generic Search Engine
+│   │   └── search_engine.h
 │   │
-│   ├── operators/
-│   │   ├── restrict.h
-│   │   ├── decompose.h
-│   │   ├── infeasible.h
-│   │   ├── relax.h
-│   │   ├── refine.h
-│   │   ├── project.h
-│   │   └── lift.h
+│   ├── semsolver/             # SemSolver: Concrete Solver Instances
+│   │   └── solver.h
 │   │
-│   ├── orchestration/
-│   │   ├── pipeline.h
-│   │   └── strategy.h
-│   │
-│   ├── backends/              # Backend capability interfaces
-│   │   ├── backend_capability.h
-│   │   ├── cad_backend.h      # CAD backend interface
-│   │   ├── lp_backend.h       # LP/Simplex backend interface
-│   │   └── icp_backend.h      # ICP backend interface
-│   │
-│   └── util/
-│       └── result.h           # OpResult<T, Witness> type
 │
-├── src/                     # Reference / default implementations
-│   ├── core/
-│   ├── domain/
-│   ├── operators/
-│   ├── orchestration/
-│   ├── backends/             # Backend implementations
-│   │   ├── cad_backend.cpp
-│   │   ├── lp_backend.cpp
-│   │   └── icp_backend.cpp
-│   └── util/
 │
-├── examples/                # Example solvers built from SemCal
+├── src/                      # Reference / default implementations
+│   ├── semcal/               # SemCal implementations
+│   │   ├── core/
+│   │   ├── domain/
+│   │   ├── state/
+│   │   ├── operators/
+│   │   ├── backends/
+│   │   └── util/
+│   ├── semkernel/            # SemKernel implementations
+│   ├── semsearch/            # SemSearch implementations
+│   └── semsolver/            # SemSolver implementations
+│       └── strategies/       # Legacy strategy implementations (deprecated)
+│
+├── examples/                # Example solvers built from SemX
 │   ├── sat/                 # SAT and SMT solver examples
 │   │   ├── sat_solver.cpp  # Pure Boolean SAT solver
 │   │   └── smt_solver.cpp  # SMT solver (with theories)
@@ -401,7 +498,7 @@ Options:
 - `--no-push`: Don't push (default)
 
 This will create:
-- Library: `build/libsemcal.a`
+- Library: `build/libsemx.a`
 - Examples:
   - `build/examples/sat/sat_solver` - Pure Boolean SAT solver
   - `build/examples/sat/smt_solver` - SMT solver with theory constraints
@@ -423,12 +520,16 @@ Run examples:
 
 ## 13. Scope and Non-Goals
 
-SemCal intentionally does **not** provide:
+SemX intentionally does **not** provide:
 
-- a solver
+- a complete solver implementation
 - a fixed search strategy
 - a termination guarantee
 - a preferred theory
 
-Its role is to define the **semantic contract**
-that enables *any* such system to be built correctly.
+Its role is to provide a **correct-by-construction foundation**
+that enables *any* such system to be built safely.
+
+> **SemX does not build solvers.
+> SemX defines what solvers are allowed to do,
+> and how they can be built safely.**

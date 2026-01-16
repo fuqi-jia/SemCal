@@ -14,7 +14,7 @@ NC='\033[0m' # No Color
 # ============================================
 # EDIT THIS MESSAGE TO CHANGE COMMIT MESSAGE
 # ============================================
-COMMIT_MESSAGE="Update SemCal: fix GitHub markdown compatibility and add SMTParser auto-download"
+COMMIT_MESSAGE="Refactor repository structure: SemCal -> SemX"
 
 # Optional: Set to false to disable automatic push after commit
 AUTO_PUSH=true

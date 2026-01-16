@@ -11,7 +11,7 @@
  * without defining a monolithic CAD solver.
  */
 
-#include "semcal.h"
+#include "semx.h"
 #include "../include/backends/cad_stub.h"
 #include "../include/operators/infeasible_cad.h"
 #include "../include/operators/decompose_cad.h"

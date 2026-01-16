@@ -12,7 +12,7 @@
  * pruning/optimization component in a hybrid solver.
  */
 
-#include "semcal.h"
+#include "semx.h"
 #include "../../include/backends/lp_backend.h"
 #include "../../include/backends/cad_backend.h"
 #include <iostream>

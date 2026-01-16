@@ -12,7 +12,7 @@
  * without defining a monolithic CAD solver.
  */
 
-#include "semcal.h"
+#include "semx.h"
 #include "../../include/backends/cad_backend.h"
 #include "../../include/backends/icp_backend.h"
 #include "../../include/operators/infeasible.h"

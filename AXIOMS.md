@@ -1,11 +1,13 @@
 # SemCal Axioms
 ## Axiomatization of Semantic Space Operators
 
-This document presents the **axiomatic core** of SemCal.
-Each axiom specifies the *minimal semantic soundness requirement*
+This document presents the **axiomatic core** of **SemCal**.
+Each axiom specifies a *minimal semantic soundness requirement*
 for a class of semantic space operators.
 
 The axioms are **theory-agnostic** and **algorithm-independent**.
+They define *what is semantically allowed*,
+not *how an algorithm is implemented*.
 
 ---
 
@@ -19,24 +21,25 @@ Let:
 - $(\mathcal{A}, \sqsubseteq)$ be an abstract domain.
 - $\gamma : \mathcal{A} \to \mathcal{P}(\mathcal{M})$ be a concretization function.
 
-A semantic state is a pair $(F, a)$ with concrete meaning:
+A **semantic state** is a pair $(F, a)$ with concrete meaning:
 \[
 \mathsf{Conc}(F,a) = [[F]] \cap \gamma(a).
 \]
 
-All axioms below are stated with respect to $\mathsf{Conc}$.
+All axioms below are stated with respect to $\mathsf{Conc}$,
+unless explicitly noted otherwise.
 
 ---
 
 ## Axiom (R): Restriction Soundness
 
-### Statement
+### Statement (Exact Restriction)
 
 A restriction operator
 \[
 \mathsf{Restrict} : (F,a) \mapsto (F,a')
 \]
-is **sound** if:
+is **exactly sound** if:
 \[
 [[F]] \cap \gamma(a) = [[F]] \cap \gamma(a').
 \]
@@ -45,23 +48,35 @@ Equivalently:
 \[
 \gamma(a') \subseteq \gamma(a)
 \quad\text{and}\quad
-\gamma(a) \cap [[F]] \subseteq \gamma(a').
+[[F]] \cap \gamma(a) \subseteq \gamma(a').
+\]
+
+### Statement (Safe Restriction)
+
+A restriction operator is **safely sound** if:
+\[
+[[F]] \cap \gamma(a)
+\;\subseteq\;
+[[F]] \cap \gamma(a').
 \]
 
 ### Intuition
 
-Restriction may *remove spurious candidates*,
-but must never remove a genuine satisfying model.
+Restriction may remove spurious candidates,
+but must never remove genuine satisfying models.
+
+Exact restriction preserves the concrete meaning,
+while safe restriction preserves satisfiability only.
 
 ### Typical Instances
 
-- Interval narrowing / bound tightening (sound ICP)
+- Sound interval contraction (ICP)
 - Constraint propagation
 - Word-level range propagation
 
 ---
 
-## Axiom (D): Decomposition Soundness
+## Axiom (D): Decomposition Covering Soundness
 
 ### Statement
 
@@ -69,16 +84,27 @@ For a decomposition operator
 \[
 \mathsf{Decomp} : a \mapsto \{a_1,\dots,a_n\},
 \]
-the following must hold:
+the following **covering condition** must hold:
 \[
 \gamma(a)
 \;\subseteq\;
 \bigcup_{i} \gamma(a_i).
 \]
 
+### Optional Strengthenings
+
+- **Subspace soundness**:
+  \[
+  \forall i,\ \gamma(a_i) \subseteq \gamma(a)
+  \]
+- **Exact decomposition**:
+  \[
+  \bigcup_i \gamma(a_i) = \gamma(a)
+  \]
+
 ### Intuition
 
-Decomposition splits the search space,
+Decomposition splits the search space
 but must **cover all possibilities**.
 Overlap and redundancy are permitted.
 
@@ -86,7 +112,7 @@ Overlap and redundancy are permitted.
 
 - Case splitting
 - Branching on variables
-- Cell decomposition (e.g., CAD, CAC)
+- Cell decomposition (CAD, CAC)
 
 ---
 
@@ -106,6 +132,7 @@ then:
 ### Intuition
 
 Declaring a region infeasible must be *globally correct*.
+No false UNSAT is permitted.
 
 ### Typical Instances
 
@@ -153,6 +180,13 @@ Given:
 
 a refinement constraint $R$ is **sound** if:
 \[
+F \Rightarrow R
+\quad\text{and}\quad
+M \not\models R.
+\]
+
+Equivalently:
+\[
 [[F]] \subseteq [[F^\alpha \land R]]
 \quad\text{and}\quad
 M \not\models R.
@@ -167,36 +201,41 @@ without excluding genuine solutions.
 
 - Lemma generation
 - Counterexample-guided refinement
-- Cutting-plane style strengthening
+- Cutting-plane strengthening
 
 ---
 
-## Axiom (P): Projection Soundness
+## Axiom (S): Shadowing Soundness
 
 ### Statement
 
 Let $\pi$ be a variable projection.
-A projection operator
+A **shadowing operator**
 \[
-\mathsf{Proj}_\pi : a \mapsto b
+\mathsf{Shadow}_\pi : (F,a) \mapsto b
 \]
 is **sound** if:
 \[
-\exists_\pi\!\left(\gamma(a)\right)
+\exists_\pi\!\big([[F]] \cap \gamma(a)\big)
 \;\subseteq\;
 \gamma(b).
 \]
 
 ### Intuition
 
-Projection must safely **over-approximate**
-existential elimination.
+Shadowing safely collapses a constrained semantic space
+onto a lower-dimensional space,
+preserving all feasible *shadows* of satisfying models.
+
+Shadowing is a **semantic operation**.
+It is distinct from structural or syntactic projection
+(e.g., CAD polynomial projection).
 
 ### Typical Instances
 
-- Quantifier elimination (over-approximate)
-- Variable elimination
-- CAD projection
+- Variable forgetting
+- Over-approximate existential abstraction
+- Dimension reduction for abstraction
 
 ---
 
@@ -204,7 +243,7 @@ existential elimination.
 
 ### Statement
 
-Let $\pi$ be a projection.
+Let $\pi$ be a variable projection.
 A lifting operator
 \[
 \mathsf{Lift}_\pi : b \mapsto a
@@ -219,7 +258,10 @@ is **sound** if:
 ### Intuition
 
 Lifting reconstructs higher-dimensional candidates
-without introducing invalid ones.
+without introducing values inconsistent with the shadowed space.
+
+This axiom expresses **safety only**.
+Completeness or progress guarantees are orthogonal.
 
 ### Typical Instances
 
@@ -229,97 +271,98 @@ without introducing invalid ones.
 
 ---
 
-## Summary
+## Summary of Axioms
 
 | Axiom | Semantic Role |
 |------:|---------------|
-| R | Sound contraction (no solution loss) |
+| R | Sound contraction (exact or safe) |
 | D | Sound space covering |
 | I | Sound refutation |
 | A | Sound over-approximation |
 | C | Sound refinement |
-| P | Sound projection |
+| S | Sound semantic shadowing |
 | L | Sound lifting |
 
 These axioms constitute the **entire semantic contract** of SemCal.
-Any algorithm satisfying the relevant axioms is a valid SemCal instantiation.
+Any algorithm satisfying the relevant axioms
+is a valid SemCal instantiation.
 
 ---
 
-## Approximation Directions
+## Semantic Guarantees
 
-When implementing operators, it is crucial to specify the
-**approximation direction** to ensure correct composition.
+Operators must declare the **semantic guarantee**
+they provide with respect to $\mathsf{Conc}$.
 
-Each operator must declare how it approximates
-the concrete meaning $\mathsf{Conc}(\sigma)$.
+### Guarantee Types
 
-### Direction Types
-
-- **PRESERVING**  
-  Exact semantic preservation:
+- **PRESERVING**
   \[
   \mathsf{Conc}(\sigma') = \mathsf{Conc}(\sigma)
   \]
 
-- **OVER\_APPROX**  
-  May introduce spurious models:
+- **OVER\_APPROX**
   \[
   \mathsf{Conc}(\sigma) \subseteq \mathsf{Conc}(\sigma')
   \]
 
-- **UNDER\_APPROX**  
-  May miss real models:
+- **UNDER\_APPROX**
   \[
   \mathsf{Conc}(\sigma') \subseteq \mathsf{Conc}(\sigma)
   \]
 
-- **REFUTE\_CERTIFIED**  
-  Only for refutation:
+- **COVERING**
   \[
-  \text{If } \mathsf{Infeasible}(\sigma)=\textsf{UNSAT},
-  \text{ then } \mathsf{Conc}(\sigma)=\emptyset
+  \mathsf{Conc}(\sigma)
+  \subseteq
+  \bigcup_i \mathsf{Conc}(\sigma_i)
+  \]
+
+- **REFUTE\_CERTIFIED**
+  \[
+  \mathsf{Infeasible}(\sigma)=\textsf{true}
+  \;\Rightarrow\;
+  \mathsf{Conc}(\sigma)=\emptyset
   \]
 
 ---
 
-### Operator Directions
+## Default Guarantees by Axiom
 
-| Axiom | Default Direction | Notes |
+| Axiom | Default Guarantee | Notes |
 |------:|------------------:|-------|
-| R (Restrict) | PRESERVING | Sound contraction: no satisfying model removed |
-| D (Decompose) | PRESERVING | Coverage: $\mathsf{Conc}(\sigma) \subseteq \bigcup_i \mathsf{Conc}(\sigma_i)$ |
+| R (Restrict) | PRESERVING / SAFE | Exact or safe contraction |
+| D (Decompose) | COVERING | Space must be covered |
 | I (Infeasible) | REFUTE\_CERTIFIED | UNSAT claims must be globally correct |
 | A (Relax) | OVER\_APPROX | By definition |
-| C (Refine) | PRESERVING | Real models must be preserved |
-| P (Project) | OVER\_APPROX | Existential elimination |
+| C (Refine) | PRESERVING | Real models preserved |
+| S (Shadow) | OVER\_APPROX | Feasible shadows preserved |
 | L (Lift) | UNDER\_APPROX | Candidate reconstruction |
 
 ---
 
-### Backend-Specific Directions
-
-Different backends may instantiate operators with different directions:
+## Backend-Specific Notes
 
 - **CAD**
-  - Project: OVER\_APPROX
-  - Decompose: PRESERVING
+  - Decompose: COVERING
   - Infeasible: REFUTE\_CERTIFIED
   - Lift: UNDER\_APPROX
+  - *Structural CAD projection is not a SemCal operator and does not instantiate Axiom (S).*
 
 - **LP / Simplex**
-  - Relax: OVER\_APPROX (standard LP relaxation)
+  - Relax: OVER\_APPROX
   - Infeasible: REFUTE\_CERTIFIED (Farkas certificate)
   - Refine: PRESERVING (cuts preserve real solutions)
 
 - **ICP**
-  - Restrict: PRESERVING (sound interval contraction)
-  - Decompose: PRESERVING (box splitting)
-  - Infeasible: REFUTE\_CERTIFIED (empty box detection)
+  - Restrict: SAFE / PRESERVING
+  - Decompose: COVERING
+  - Infeasible: REFUTE\_CERTIFIED
 
 **Critical.**
-When composing operators, approximation directions must be compatible.
-For example, composing an OVER\_APPROX operator with an UNDER\_APPROX
-operator requires explicit semantic justification.
+When composing operators,
+their semantic guarantees must be compatible.
+In particular, composing OVER\_APPROX and UNDER\_APPROX operators
+requires explicit justification.
 
 ---

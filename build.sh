@@ -117,7 +117,7 @@ make -j"$JOBS"
 
 echo ""
 echo -e "${GREEN}=== Build Complete ===${NC}"
-echo "Library: $BUILD_DIR/libsemcal.a"
+echo "Library: $BUILD_DIR/libsemx.a"
 echo "Examples:"
 echo "  - $BUILD_DIR/examples/sat/sat_solver"
 echo "  - $BUILD_DIR/examples/sat/smt_solver"

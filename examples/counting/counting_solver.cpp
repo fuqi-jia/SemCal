@@ -1,4 +1,4 @@
-#include "semcal.h"
+#include "semx.h"
 #include <iostream>
 #include <memory>
 
@@ -12,11 +12,11 @@ using namespace semcal;
  */
 class CountingSolver {
 private:
-    std::unique_ptr<orchestration::Pipeline> pipeline_;
+    std::unique_ptr<solver::strategies::LegacyOperatorPipeline> pipeline_;
 
 public:
     CountingSolver() {
-        pipeline_ = orchestration::PipelineFactory::createDefault();
+        pipeline_ = solver::strategies::LegacyPipelineFactory::createDefault();
     }
 
     /**
@@ -33,7 +33,7 @@ public:
         );
 
         // Use breadth-first search to explore all states
-        orchestration::BreadthFirstStrategy strategy(1000);
+        solver::strategies::LegacyBreadthFirstStrategy strategy(1000);
         auto results = strategy.execute(*state, *pipeline_);
 
         // Count models in each resulting state

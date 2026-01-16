@@ -1,4 +1,4 @@
-#include "semcal.h"
+#include "semx.h"
 #include <iostream>
 #include <memory>
 
@@ -12,11 +12,11 @@ using namespace semcal;
  */
 class SimpleSMTSolver {
 private:
-    std::unique_ptr<orchestration::Pipeline> pipeline_;
+    std::unique_ptr<solver::strategies::LegacyOperatorPipeline> pipeline_;
 
 public:
     SimpleSMTSolver() {
-        pipeline_ = orchestration::PipelineFactory::createDefault();
+        pipeline_ = solver::strategies::LegacyPipelineFactory::createDefault();
     }
 
     /**
@@ -33,7 +33,7 @@ public:
         );
 
         // Use depth-first search strategy
-        orchestration::DepthFirstStrategy strategy(100);
+        solver::strategies::LegacyDepthFirstStrategy strategy(100);
         auto results = strategy.execute(*state, *pipeline_);
 
         // If we found any feasible states, the formula is satisfiable
